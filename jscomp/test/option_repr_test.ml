@@ -107,4 +107,15 @@ external log3 :
 let none_arg = None
 let _ = log3 ~req:(`Int 6) ?opt:none_arg ()
 
+;; b __LOC__ 
+  (Belt.List.every 
+  [
+    Some None < Some (Some 3);
+    Some (Some 3) > Some None;
+    Some None < Some (Some None);
+    Some (Some None) > Some None  ;
+    Some (Some "3") > Some None 
+  ]
+  (fun x -> x))
+
 ;; Mt.from_pair_suites __FILE__ !suites

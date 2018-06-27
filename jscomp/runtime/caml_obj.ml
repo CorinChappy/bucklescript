@@ -181,8 +181,13 @@ let rec caml_compare (a : Obj.t) (b : Obj.t) : int =
     match is_a_number , is_b_number with 
     | true, true -> 
       Pervasives.compare (Obj.magic a : int) (Obj.magic b : int)
-    | true , false -> -1 (* Integer < Block in OCaml runtime GPR #1195 *)
-    | false, true -> 1 
+    | true , false -> 
+      if Bs_obj.tag b = 256 then 1 (* Some (Some ..) < x *)
+      else 
+        -1 (* Integer < Block in OCaml runtime GPR #1195, except Some.. *)
+    | false, true -> 
+      if Bs_obj.tag a = 256 then -1
+      else 1
     | false, false -> 
       if a_type = "boolean"
       then (* TODO: refine semantics when comparing with [null] *)
@@ -202,6 +207,14 @@ let rec caml_compare (a : Obj.t) (b : Obj.t) : int =
           caml_compare (Obj.field a 0) b
         else if tag_b = 250 then
           caml_compare a (Obj.field b 0)
+        else if tag_a = 256 then   
+          if tag_b = 256 then 
+            Pervasives.compare (Obj.magic (Obj.field a 1) : int)
+             (Obj.magic (Obj.field b 1) : int)
+            (* Some None < Some (Some None)) *)
+          else  (* b could not be undefined/None *)
+             (* Some None < Some ..*) 
+             -1 
         else if tag_a = 248 (* object/exception *)  then
           Pervasives.compare (Obj.magic @@ Obj.field a 1 : int) (Obj.magic @@ Obj.field b 1 )
         else if tag_a = 251 (* abstract_tag *) then

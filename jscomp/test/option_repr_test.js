@@ -124,6 +124,25 @@ b("File \"option_repr_test.ml\", line 95, characters 4-11", Caml_obj.caml_lessth
 
 console.log(6, undefined);
 
+b("File \"option_repr_test.ml\", line 110, characters 5-12", Belt_List.every(/* :: */[
+          Caml_obj.caml_lessthan(Js_primitive.some(undefined), 3),
+          /* :: */[
+            Caml_obj.caml_greaterthan(3, Js_primitive.some(undefined)),
+            /* :: */[
+              Caml_obj.caml_lessthan(Js_primitive.some(undefined), Js_primitive.some(Js_primitive.some(undefined))),
+              /* :: */[
+                Caml_obj.caml_greaterthan(Js_primitive.some(Js_primitive.some(undefined)), Js_primitive.some(undefined)),
+                /* :: */[
+                  Caml_obj.caml_greaterthan("3", Js_primitive.some(undefined)),
+                  /* [] */0
+                ]
+              ]
+            ]
+          ]
+        ], (function (x) {
+            return x;
+          })));
+
 Mt.from_pair_suites("option_repr_test.ml", suites[0]);
 
 var f7 = undefined;
