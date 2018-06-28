@@ -14989,7 +14989,7 @@ var yyact = /* array */[
       return mk$12(symbol_rloc(/* () */0), _5, symbol_docs(/* () */0), get_text(Parsing.symbol_start_pos(/* () */0)), mkrhs(_2, 2), _4);
     }),
   (function () {
-      return undefined;
+      
     }),
   (function (__caml_parser_env) {
       return Parsing.peek_val(__caml_parser_env, 0);
@@ -15266,7 +15266,7 @@ var yyact = /* array */[
       return Parsing.peek_val(__caml_parser_env, 0);
     }),
   (function () {
-      return undefined;
+      
     }),
   (function (__caml_parser_env) {
       var _1 = Parsing.peek_val(__caml_parser_env, 5);
@@ -15762,7 +15762,7 @@ var yyact = /* array */[
       return mkpat(/* Ppat_any */0);
     }),
   (function () {
-      return undefined;
+      
     }),
   (function (__caml_parser_env) {
       return Parsing.peek_val(__caml_parser_env, 0);

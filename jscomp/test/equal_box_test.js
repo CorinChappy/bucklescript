@@ -23,7 +23,7 @@ function b(loc, x) {
 }
 
 function f() {
-  return undefined;
+  
 }
 
 function shouldBeNull() {

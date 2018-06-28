@@ -1459,6 +1459,8 @@ and function_body cxt f b =
                 Return {return_value = {expression_desc = Undefined}} }])
         ->
         statement false cxt f {s with statement_desc = If(bool,then_,None)}
+    | Return {return_value = {expression_desc = Undefined}}
+      -> cxt    
     | _ ->        
       statement false  cxt f  s
     end
