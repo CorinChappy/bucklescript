@@ -33,7 +33,7 @@ val process_method_attributes_rev :
   (bool * bool , [`Get | `No_get ]) st * t
 
 val process_attributes_rev :
-  t -> [ `Meth_callback | `Nothing | `Uncurry | `Method ] * t
+  t -> [ `Meth_callback | `Nothing | `Uncurry | `Method of Location.t] * t
 
 val process_pexp_fun_attributes_rev :
   t -> [ `Nothing | `Exn ] * t
@@ -80,7 +80,7 @@ val iter_process_derive_type :
 val bs : attr
 val is_bs : attr -> bool
 val bs_this : attr
-val bs_method : attr
+val bs_method : Location.t -> attr
 val bs_obj : attr
 
 

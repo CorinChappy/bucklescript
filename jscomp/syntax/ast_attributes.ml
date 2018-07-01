@@ -90,7 +90,7 @@ let process_method_attributes_rev (attrs : t) =
     ) ( {get = None ; set = None}, []) attrs
 
 
-let process_attributes_rev (attrs : t) =
+let process_attributes_rev (attrs : t) : _ * t =
   List.fold_left (fun (st, acc) (({txt; loc}, _) as attr : attr) ->
       match txt, st  with
       | "bs", (`Nothing | `Uncurry)
@@ -98,8 +98,8 @@ let process_attributes_rev (attrs : t) =
         `Uncurry, acc
       | "bs.this", (`Nothing | `Meth_callback)
         ->  `Meth_callback, acc
-      | "bs.meth",  (`Nothing | `Method)
-        -> `Method, acc
+      | "bs.meth",  (`Nothing | `Method _)
+        -> `Method loc, acc
       | "bs", _
       | "bs.this", _
         -> Bs_syntaxerr.err loc Conflict_bs_bs_this_bs_meth
@@ -349,8 +349,8 @@ let is_bs (attr : attr) =
 let bs_this : attr
   =  {txt = "bs.this" ; loc = locg}, Ast_payload.empty
 
-let bs_method : attr
-  =  {txt = "bs.meth"; loc = locg}, Ast_payload.empty
+let bs_method loc : attr
+  =  {txt = "bs.meth"; loc}, Ast_payload.empty
 
 let bs_obj : attr
   =  {txt = "bs.obj"; loc = locg}, Ast_payload.empty

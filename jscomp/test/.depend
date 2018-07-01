@@ -257,6 +257,7 @@ functor_inst.cmj :
 gbk.cmj : ../runtime/js.cmj
 genlex_test.cmj : ../stdlib/stream.cmj mt.cmj ../stdlib/list.cmj \
     ../stdlib/genlex.cmj
+ghost_loc_test.cmj : ../runtime/js.cmj
 global_exception_regression_test.cmj : mt.cmj
 global_mangles.cmj :
 global_module_alias_test.cmj : mt.cmj ../stdlib/list.cmj

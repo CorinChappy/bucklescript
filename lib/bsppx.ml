@@ -10210,7 +10210,7 @@ val process_method_attributes_rev :
   (bool * bool , [`Get | `No_get ]) st * t
 
 val process_attributes_rev :
-  t -> [ `Meth_callback | `Nothing | `Uncurry | `Method ] * t
+  t -> [ `Meth_callback | `Nothing | `Uncurry | `Method of Location.t] * t
 
 val process_pexp_fun_attributes_rev :
   t -> [ `Nothing | `Exn ] * t
@@ -10257,7 +10257,7 @@ val iter_process_derive_type :
 val bs : attr
 val is_bs : attr -> bool
 val bs_this : attr
-val bs_method : attr
+val bs_method : Location.t -> attr
 val bs_obj : attr
 
 
@@ -10362,7 +10362,7 @@ let process_method_attributes_rev (attrs : t) =
     ) ( {get = None ; set = None}, []) attrs
 
 
-let process_attributes_rev (attrs : t) =
+let process_attributes_rev (attrs : t) : _ * t =
   List.fold_left (fun (st, acc) (({txt; loc}, _) as attr : attr) ->
       match txt, st  with
       | "bs", (`Nothing | `Uncurry)
@@ -10370,8 +10370,8 @@ let process_attributes_rev (attrs : t) =
         `Uncurry, acc
       | "bs.this", (`Nothing | `Meth_callback)
         ->  `Meth_callback, acc
-      | "bs.meth",  (`Nothing | `Method)
-        -> `Method, acc
+      | "bs.meth",  (`Nothing | `Method _)
+        -> `Method loc, acc
       | "bs", _
       | "bs.this", _
         -> Bs_syntaxerr.err loc Conflict_bs_bs_this_bs_meth
@@ -10621,8 +10621,8 @@ let is_bs (attr : attr) =
 let bs_this : attr
   =  {txt = "bs.this" ; loc = locg}, Ast_payload.empty
 
-let bs_method : attr
-  =  {txt = "bs.meth"; loc = locg}, Ast_payload.empty
+let bs_method loc : attr
+  =  {txt = "bs.meth"; loc}, Ast_payload.empty
 
 let bs_obj : attr
   =  {txt = "bs.obj"; loc = locg}, Ast_payload.empty
@@ -16547,12 +16547,12 @@ end = struct
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *)
 open Ast_helper
-let process_getter_setter ~no ~get ~set
+let process_getter_setter ~not_getter_setter ~get ~set
     loc name
     (attrs : Ast_attributes.t)
     (ty : Parsetree.core_type) acc  =
   match Ast_attributes.process_method_attributes_rev attrs with 
-  | {get = None; set = None}, _  ->  no ty :: acc 
+  | {get = None; set = None}, _  ->  not_getter_setter ty :: acc 
   | st , pctf_attributes
     -> 
     let get_acc = 
@@ -16588,7 +16588,7 @@ let handle_class_type_field self
   | Pctf_method 
       (name, private_flag, virtual_flag, ty) 
     ->
-    let no (ty : Parsetree.core_type) =
+    let not_getter_setter (ty : Parsetree.core_type) =
       let ty = 
         match ty.ptyp_desc with 
         | Ptyp_arrow (label, args, body) 
@@ -16630,7 +16630,7 @@ let handle_class_type_field self
                         (Ast_literal.type_unit ~loc ())
                      );
        pctf_attributes} in
-    process_getter_setter ~no ~get ~set loc name ctf.pctf_attributes ty acc     
+    process_getter_setter ~not_getter_setter ~get ~set loc name ctf.pctf_attributes ty acc     
 
   | Pctf_inherit _ 
   | Pctf_val _ 
@@ -16670,7 +16670,7 @@ let handle_core_type
         Ast_util.to_uncurry_type loc self label args body 
       |  `Meth_callback, ptyp_attributes ->
         Ast_util.to_method_callback_type loc self label args body
-      | `Method, ptyp_attributes ->
+      | `Method _, ptyp_attributes ->
         Ast_util.to_method_type loc self label args body
       | `Nothing , _ -> 
         Bs_ast_mapper.default_mapper.typ self ty
@@ -16689,7 +16689,7 @@ let handle_core_type
               | `Nothing, attrs -> attrs, ty (* #1678 *)
               | `Uncurry, attrs ->
                 attrs, Ast_attributes.bs +> ty
-              | `Method, _
+              | `Method _, _
                 -> Location.raise_errorf ~loc "bs.get/set conflicts with bs.meth"
               | `Meth_callback, attrs ->
                 attrs, Ast_attributes.bs_this +> ty 
@@ -16701,25 +16701,25 @@ let handle_core_type
               | `Nothing, attrs -> attrs, ty
               | `Uncurry, attrs ->
                 attrs, Ast_attributes.bs +> ty 
-              | `Method, _
+              | `Method _, _
                 -> Location.raise_errorf ~loc "bs.get/set conflicts with bs.meth"
               | `Meth_callback, attrs ->
                 attrs, Ast_attributes.bs_this +> ty
             in               
             name, attrs, Ast_util.to_method_type loc self "" core_type 
               (Ast_literal.type_unit ~loc ()) in
-          let no ty =
+          let not_getter_setter ty =
             let attrs, core_type =
               match Ast_attributes.process_attributes_rev ptyp_attrs with
               | `Nothing, attrs -> attrs, ty
               | `Uncurry, attrs ->
                 attrs, Ast_attributes.bs +> ty 
-              | `Method, attrs -> 
-                attrs, Ast_attributes.bs_method +> ty 
+              | `Method loc, attrs -> 
+                attrs, Ast_attributes.bs_method loc +> ty 
               | `Meth_callback, attrs ->
                 attrs, Ast_attributes.bs_this +> ty  in            
             label, attrs, self.typ self core_type in
-          process_getter_setter ~no ~get ~set
+          process_getter_setter ~not_getter_setter ~get ~set
             loc label ptyp_attrs core_type acc
         ) methods [] in      
     let inner_type =
@@ -20263,7 +20263,7 @@ let rec unsafe_mapper : Bs_ast_mapper.mapper =
               {e with
                pexp_desc = Ast_util.to_uncurry_fn loc self pat body  ;
                pexp_attributes}
-            | `Method , _
+            | `Method _ , _
               ->  Location.raise_errorf ~loc "bs.meth is not supported in function expression"
             | `Meth_callback , pexp_attributes
               ->

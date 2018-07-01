@@ -110,7 +110,7 @@ let rec unsafe_mapper : Bs_ast_mapper.mapper =
               {e with
                pexp_desc = Ast_util.to_uncurry_fn loc self pat body  ;
                pexp_attributes}
-            | `Method , _
+            | `Method _ , _
               ->  Location.raise_errorf ~loc "bs.meth is not supported in function expression"
             | `Meth_callback , pexp_attributes
               ->
